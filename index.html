@@ -749,8 +749,8 @@
 </div>
 
 <script>
-    // ==================== Tally.so 配置 ====================
-    const TALLY_FORM_ID = "9qvO9K";
+    // ==================== Formcarry 配置 ====================
+    const FORMCARRY_ID = "MZi-wzBc6Mv";
 
     // ==================== 16个情境数据 ====================
     const SITUATIONS = [
@@ -876,19 +876,26 @@
         return SITUATIONS[Math.floor(Math.random() * SITUATIONS.length)];
     }
 
-    // 提交数据到 Tally.so
-    async function submitToTally() {
+    // 提交数据到 Formcarry
+    async function submitToFormcarry() {
         const formData = new FormData();
         formData.append('data', JSON.stringify(allData));
 
         try {
-            const response = await fetch(`https://tally.so/forms/${TALLY_FORM_ID}/submission`, {
+            const response = await fetch(`https://formcarry.com/s/${FORMCARRY_ID}`, {
                 method: 'POST',
                 body: formData
             });
-            return response.ok;
+
+            if (response.ok) {
+                return true;
+            } else {
+                const errorText = await response.text();
+                console.error('Formcarry 错误:', errorText);
+                return false;
+            }
         } catch (error) {
-            console.error('提交失败:', error);
+            console.error('网络错误:', error);
             return false;
         }
     }
@@ -908,7 +915,7 @@
 
         allData.reactionTimes.completeTime = new Date().toISOString();
 
-        const success = await submitToTally();
+        const success = await submitToFormcarry();
         localStorage.setItem('last_experiment_data', JSON.stringify(allData));
 
         if (success) {
