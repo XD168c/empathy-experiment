@@ -259,7 +259,11 @@
     let allData = { participant: {}, experiment: {}, questionnaire: {}, timestamp: null, sessionId: null, reactionTimes: {} };
     let experimentState = { group: null, situation: null, completed: false, isTyping: false, chatEnded: false };
 
-    if (localStorage.getItem('experiment_completed') === 'true') {
+    // ==================== 测试模式：链接带 ?test=1 可无限次测试 ====================
+    const urlParams = new URLSearchParams(window.location.search);
+    const isTestMode = urlParams.get('test') === '1';
+
+    if (!isTestMode && localStorage.getItem('experiment_completed') === 'true') {
         alert('您已经完成过本实验，感谢参与！');
         document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h2>实验已完成</h2><p>您已经参与过本次实验，感谢您的支持！</p></div>';
         throw new Error('Experiment already completed');
@@ -360,7 +364,7 @@
         localStorage.setItem('last_experiment_data', JSON.stringify(allData));
 
         if (success) {
-            localStorage.setItem('experiment_completed', 'true');
+            if (!isTestMode) localStorage.setItem('experiment_completed', 'true');
             hideLoading();
             showScreen(7);
         } else {
@@ -368,7 +372,7 @@
             if (confirm('数据提交失败，是否重试？\n\n点击"确定"重试，数据已保存在本地。')) {
                 submitData();
             } else {
-                localStorage.setItem('experiment_completed', 'true');
+                if (!isTestMode) localStorage.setItem('experiment_completed', 'true');
                 showScreen(7);
             }
         }
