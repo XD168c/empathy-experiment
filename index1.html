@@ -3,61 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>人智情感交互实验 - B组（认知共情）</title>
+    <title>人智情感交互实验 - A组（情感共情）</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{background:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Helvetica,Arial,sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:0}
-        .phone-container{max-width:420px;width:100%;background:white;border-radius:24px;box-shadow:0 8px 28px rgba(0,0,0,0.12);overflow:hidden;min-height:100vh;display:flex;flex-direction:column;position:relative}
-        .screen{display:none;flex-direction:column;flex:1}
-        .screen.active{display:flex}
-        .progress{padding:8px 16px;background:white;border-bottom:0.5px solid #e9e9ef;display:flex;gap:4px;flex-shrink:0}
-        .progress-dot{flex:1;height:4px;background:#e5e5e5;border-radius:4px;transition:background .3s}
-        .progress-dot.active{background:#3a3a3c}
-        .progress-dot.completed{background:#3a3a3c}
-        .chat-header{padding:18px 20px;border-bottom:.5px solid #e9e9ef;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#fff}
-        .back-btn{font-size:28px;color:#3a3a3c;cursor:pointer;line-height:1}
-        .avatar-circle{width:48px;height:48px;background:#fff;border:1.5px solid #3a3a3c;border-radius:50%;display:flex;align-items:center;justify-content:center}
-        .avatar-svg{width:28px;height:28px}
-        .header-name{font-size:18px;font-weight:600;color:#1c1c1e}
-        .header-from{font-size:13px;color:#8e8e93}
-        .chat-content{background:#f8f8fa;padding:20px 16px;flex:1;overflow-y:auto;display:flex;flex-direction:column}
-        .user-message{display:flex;justify-content:flex-end;margin-bottom:20px}
-        .user-bubble{max-width:85%;background:#d4e3fd;padding:12px 16px;border-radius:22px;border-bottom-right-radius:4px;font-size:15px;line-height:1.5;color:#1c1c1e;word-break:break-word;white-space:pre-wrap}
-        .agent-message-wrapper{width:100%;margin-bottom:16px}
-        .agent-message-area{display:flex;flex-direction:column;align-items:flex-start}
-        .agent-bubble{max-width:85%;background:#e5e5ea;padding:12px 16px;border-radius:22px;border-bottom-left-radius:4px;font-size:15px;line-height:1.5;color:#1c1c1e;word-break:break-word;white-space:pre-wrap}
-        .action-buttons{display:flex;gap:16px;margin-top:10px;margin-bottom:4px}
-        .action-btn{background:#fff;border:1px solid #d1d1d6;border-radius:24px;padding:5px 14px;font-size:12px;color:#3a3a3c;display:flex;align-items:center;gap:6px;cursor:pointer}
-        .action-btn svg{width:14px;height:14px;stroke:#3a3a3c;stroke-width:1.5;fill:none}
-        .thinking{display:flex;align-items:center;gap:8px;background:#e5e5ea;padding:12px 18px;border-radius:22px;border-bottom-left-radius:4px;font-size:14px;color:#8e8e93}
-        .dot{width:8px;height:8px;background:#8e8e93;border-radius:50%;animation:bounce 1.4s infinite ease-in-out both}
-        .dot:nth-child(1){animation-delay:-.32s}
-        .dot:nth-child(2){animation-delay:-.16s}
-        @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-        .input-area{padding:12px 16px 16px;border-top:.5px solid #e9e9ef;display:flex;align-items:center;gap:10px;flex-shrink:0;background:#fff}
-        .input-icon{font-size:22px;color:#3a3a3c;cursor:pointer}
-        .input-placeholder{flex:1;background:#f5f5f7;border-radius:24px;padding:10px 16px;font-size:14px;color:#8e8e93;border:none;outline:none}
-        .input-placeholder[readonly]{background:#f5f5f7;color:#1c1c1e;cursor:default}
-        .send-btn-circle{background:#3a3a3c;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none}
-        .send-btn-circle:disabled{background:#c7c7cc;cursor:not-allowed}
-        .continue-btn{margin:12px 16px 20px;padding:12px;background:#3a3a3c;color:#fff;border:none;border-radius:24px;font-size:15px;font-weight:500;cursor:pointer;display:none;text-align:center;flex-shrink:0}
-        .situation-card{background:#f8f8fa;border-radius:20px;padding:24px 20px;margin:20px 16px;border:1px solid #e5e5e5;line-height:1.6;font-size:16px;color:#1c1c1e}
-        .reading-timer{text-align:center;font-size:13px;color:#8e8e93;margin:16px 16px 8px}
-        .next-step-btn{margin:20px 16px 30px;padding:14px;background:#3a3a3c;color:#fff;border:none;border-radius:24px;font-size:16px;font-weight:500;cursor:pointer;text-align:center}
-        .page-header{padding:24px 20px 16px;text-align:center;border-bottom:.5px solid #e9e9ef}
-        .page-header h1{font-size:22px;font-weight:600;color:#1c1c1e}
-        .page-header p{font-size:13px;color:#8e8e93;margin-top:8px}
-        .form-content{padding:20px 16px;flex:1;overflow-y:auto}
-        .btn{width:100%;padding:14px;background:#3a3a3c;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:500;cursor:pointer;margin-top:12px}
-        .code-box{background:#f0f0f0;border-radius:16px;padding:30px 20px;text-align:center;margin:20px 0}
-        .code-number{font-size:48px;font-weight:bold;color:#3a3a3c;letter-spacing:4px}
-        .code-label{font-size:14px;color:#666;margin-top:12px}
-        .instruction-box{background:#f8f8fa;border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid #e5e5e5;line-height:1.6;font-size:14px;color:#1c1c1e}
-        .instruction-box p{margin-bottom:12px}
-        .instruction-box p:last-child{margin-bottom:0}
-        .instruction-box strong{font-weight:600;color:#000}
-        @supports (padding-bottom:env(safe-area-inset-bottom)){.input-area{padding-bottom:calc(16px + env(safe-area-inset-bottom))}}
-        @media (max-width:380px){.code-number{font-size:36px}}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        .phone-container {
+            max-width: 420px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .progress {
+            padding: 8px 16px;
+            background: white;
+            border-bottom: 0.5px solid #e9e9ef;
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .progress-dot {
+            flex: 1;
+            height: 4px;
+            background: #e5e5e5;
+            border-radius: 4px;
+            transition: background .3s;
+        }
+
+        .progress-dot.active {
+            background: #3a3a3c;
+        }
+
+        .progress-dot.completed {
+            background: #3a3a3c;
+        }
+
+        .chat-header {
+            padding: 18px 20px;
+            border-bottom: .5px solid #e9e9ef;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            background: #fff;
+        }
+
+        .back-btn {
+            font-size: 28px;
+            color: #3a3a3c;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .avatar-circle {
+            width: 48px;
+            height: 48px;
+            background: #fff;
+            border: 1.5px solid #3a3a3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .header-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .header-from {
+            font-size: 13px;
+            color: #8e8e93;
+        }
+
+        .chat-content {
+            background: #f8f8fa;
+            padding: 20px 16px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .user-bubble {
+            max-width: 85%;
+            background: #d4e3fd;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border-bottom-right-radius: 4px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #1c1c1e;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .agent-message-wrapper {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .agent-message-area {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .agent-bubble {
+            max-width: 85%;
+            background: #e5e5ea;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border-bottom-left-radius: 4px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #1c1c1e;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #e5e5ea;
+            padding: 12px 18px;
+            border-radius: 22px;
+            border-bottom-left-radius: 4px;
+            font-size: 14px;
+            color: #8e8e93;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #8e8e93;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .input-area {
+            padding: 12px 16px 16px;
+            border-top: .5px solid #e9e9ef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            background: #fff;
+        }
+
+        .input-icon {
+            font-size: 22px;
+            color: #3a3a3c;
+            cursor: pointer;
+        }
+
+        .input-placeholder {
+            flex: 1;
+            background: #f5f5f7;
+            border-radius: 24px;
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #8e8e93;
+            border: none;
+            outline: none;
+        }
+
+        .input-placeholder[readonly] {
+            background: #f5f5f7;
+            color: #1c1c1e;
+            cursor: default;
+        }
+
+        .send-btn-circle {
+            background: #3a3a3c;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+
+        .send-btn-circle:disabled {
+            background: #c7c7cc;
+            cursor: not-allowed;
+        }
+
+        .continue-btn {
+            margin: 12px 16px 20px;
+            padding: 12px;
+            background: #3a3a3c;
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: none;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .situation-card {
+            background: #f8f8fa;
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin: 20px 16px;
+            border: 1px solid #e5e5e5;
+            line-height: 1.6;
+            font-size: 16px;
+            color: #1c1c1e;
+        }
+
+        .reading-timer {
+            text-align: center;
+            font-size: 13px;
+            color: #8e8e93;
+            margin: 16px 16px 8px;
+        }
+
+        .next-step-btn {
+            margin: 20px 16px 30px;
+            padding: 14px;
+            background: #3a3a3c;
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .page-header {
+            padding: 24px 20px 16px;
+            text-align: center;
+            border-bottom: .5px solid #e9e9ef;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: #8e8e93;
+            margin-top: 8px;
+        }
+
+        .form-content {
+            padding: 20px 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #3a3a3c;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .code-box {
+            background: #f0f0f0;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .code-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #3a3a3c;
+            letter-spacing: 4px;
+        }
+
+        .code-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 12px;
+        }
+
+        .instruction-box {
+            background: #f8f8fa;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e5e5;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #1c1c1e;
+        }
+
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .input-area {
+                padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            }
+        }
+
+        @media (max-width: 380px) {
+            .code-number {
+                font-size: 36px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -131,7 +455,7 @@
         <div class="form-content">
             <div class="code-box">
                 <div class="code-number" id="expCode">--</div>
-                <div class="code-label">请记住下面的内容，填写到问卷的第一题内</div>
+                <div class="code-label">请记住上面的编号，填写到问卷的第一题内</div>
             </div>
             <button class="btn" id="goToWJXBtn">继续填写问卷 →</button>
         </div>
@@ -139,95 +463,95 @@
 </div>
 
 <script>
-    // ==================== 问卷星链接配置 ====================
-    const WJX_URL = "https://v.wjx.cn/vm/PHyyRPf.aspx";
+    // ==================== 问卷星链接（请替换为实际链接） ====================
+    const WJX_URL = "https://www.wjx.cn/vm/example.aspx";  // ⚠️ 请将此链接替换为您的问卷星链接
 
-    // ==================== 16个情境数据（B组 - 认知共情）====================
-    const SITUATIONS = [
-        { id: 1, title: "考研失利", userMessage: "准备了三个月的考研，每天图书馆开门去闭馆回，推掉了所有社交。今天查分，我发现分数比分数线低了二十分。",
-          reply: [
-            "考研差二十分，可能会让人感到非常失落。三个月拼尽全力结果却与期望相差甚远，这种落差可能会让人觉得心里堵得慌。",
-            "面对这样的结果，确实可能会让人感到迷茫。一次考试并不能定义一个人的能力。建议你先给自己几天时间消化情绪，然后理性评估接下来的选择。"
-          ] },
-        { id: 2, title: "面试说缺点被拒", userMessage: "今天去面试，HR最后问\"你最大的缺点是什么\"。我脑子一热说了实话，她说\"那我们再考虑一下\"。出门就知道没戏了。",
-          reply: [
-            "面试时因为说实话被拒，可能会让人感到非常懊悔。坦诚反而成了减分项，这种憋屈感可能会让人觉得心里不是滋味。",
-            "这种情况确实可能会让人产生自我怀疑。但你的真诚可能只是在帮你筛掉不合适的地方。建议你记录下面试官的反应，作为下次面试的参考。"
-          ] },
-        { id: 3, title: "论文写完蓝屏丢失", userMessage: "明早八点要交论文，我写到凌晨三点终于写完。保存时电脑突然蓝屏，重启后文档里什么都没有了。",
-          reply: [
-            "论文写到凌晨三点突然没了，可能会让人感到非常崩溃。功败垂成的感觉可能会让人觉得喘不过气。",
-            "这种情况下产生焦虑是很正常的。但你既然能写一次，就一定能更快地写出第二次。建议你先去洗把脸、吃点东西，缓一缓再开始重写。"
-          ] },
-        { id: 4, title: "汇报课PPT突然放音乐", userMessage: "今天是汇报课，我点击播放PPT，安静的教室里突然传出很大声的背景音乐，所有人都抬头看着我。",
-          reply: [
-            "汇报时突然放音乐，可能会让人感到非常尴尬。突然成为全班的焦点，这种社死感可能会让人觉得脚趾抠地。",
-            "这种情况确实可能会让人想要逃避。但这种小插曲大家笑一笑就过去了，没有人会一直记得。建议你试试深呼吸，把注意力转到怎么继续汇报上。"
-          ] },
-        { id: 5, title: "吐槽作业发错群", userMessage: "老师刚在课程群发了作业通知，我想在宿舍群里：\"这课作业又多又水，写完记得交\"。发完才发现刚才那句话发到了课程群。",
-          reply: [
-            "吐槽作业发错群，可能会让人感到非常尴尬。背后说坏话被当场抓包，这种社死感可能会让人觉得头皮发麻。",
-            "这种情况下产生担忧是很正常的。老师也是从学生过来的，大概率一笑而过。建议你先试试撤回，不行就别再补发解释了。"
-          ] },
-        { id: 6, title: "选课网络卡住", userMessage: "选课系统今天早上十点开放，室友都抢到了自己心仪的课程，但是我的网络卡的根本进不去。",
-          reply: [
-            "选课网络卡住进不去，可能会让人感到非常焦急。别人都在欢呼，自己却连页面都刷不出来，这种对比可能会让人觉得心急如焚。",
-            "这种情况下担心学分是很正常的。后面还有补选和退课的机会，一般都能修够学分的。建议你试试换手机热点，让室友帮忙刷。"
-          ] },
-        { id: 7, title: "接力赛掉棒", userMessage: "学院趣味运动会接力赛，我们组一直领先，交接棒传给我时我没接住，最后只拿了第四，但所有人都跟我说没关系。",
-          reply: [
-            "接力赛掉棒影响全队，可能会让人感到非常内疚。让团队与胜利失之交臂，这种自责感可能会让人难以承受。",
-            "这种情况下产生内疚是很正常的。但大家说\"没关系\"是真心的，因为他们看到的是你拼尽全力的样子。建议你先让自己缓一缓，然后试着接受队友的好意。"
-          ] },
-        { id: 8, title: "凌晨打蚊子找不到", userMessage: "凌晨三点被蚊子咬醒，我起来打蚊子打了半小时。刚躺下，耳边又有嗡嗡声，开着灯找了一圈没找到。",
-          reply: [
-            "凌晨被蚊子折腾得睡不着，可能会让人感到非常烦躁。打又打不到睡又睡不着，这种反复被折腾的体验可能会让人无法平静。",
-            "这种情况下产生烦躁是很正常的。你的睡眠比打赢蚊子重要。建议你试试耳塞或者蚊帐，慢慢平复自己的情绪。"
-          ] },
-        { id: 9, title: "食堂被撞洒饭", userMessage: "今天在食堂吃饭，我端着盘子找位置时被人撞了一下。整盘饭洒在地上，汤汁溅了一裤子，那人头也不回走了。",
-          reply: [
-            "饭被撞洒那人还走了，可能会让人感到非常愤怒。受到无妄之灾，肇事者却没有一点歉意，这种被冒犯的感觉可能会让人感到窝火。",
-            "这种情况下产生愤怒是很正常的。那个人不值得你用更大的情绪惩罚自己。建议你骂两句解解气，去换一身衣服，再重新买一份饭。"
-          ] },
-        { id: 10, title: "小组作业被白嫖者批评", userMessage: "小组作业，我一个人做完了整个PPT，调了格式，晚上发到群里，那个什么都没干的人回了一句：\"你这做的是什么啊。\"",
-          reply: [
-            "什么都没做的人反而批评你，可能会让人感到非常愤怒。这种不付出还对别人努力指手画脚的行为，可能会让人感到荒唐。",
-            "这种情况下产生愤怒是很正常的。你的努力值得被尊重。建议你直接@他，请他拿出修改方案，把问题丢回去。别自己生闷气。"
-          ] },
-        { id: 11, title: "银行排队一小时被劝退", userMessage: "今天去银行办业务，排队等了一个小时。轮到我的时候工作人员说\"系统升级，办不了，明天再来吧\"。",
-          reply: [
-            "排队一小时被劝退，可能会让人感到非常愤怒。白白浪费了一小时，明天还要再来排一次，这种被耍的感觉可能会让人觉得窝火。",
-            "这种情况下产生愤怒是很正常的。你完全有权利表达不满。建议你找大堂经理反馈一下，让他们知道这件事有多严重。"
-          ] },
-        { id: 12, title: "周末又被强制开会", userMessage: "我的周末又没了，班级群通知周六早上九点开\"动员大会\"，必须签到。这已经是本周第三个强制参加的会。",
-          reply: [
-            "周末被强制开会，可能会让人感到非常厌烦。休息时间根本不归自己管，这种被强制的感觉可能会让人透不过气。",
-            "这种情况下产生厌烦是很正常的。你已经坚持去了两个了，真的做得很好了。既然躲不掉，就把它当成发呆的机会。建议你开完会给自己补点舒服的事。"
-          ] },
-        { id: 13, title: "考后担心挂科", userMessage: "刚考完一门课，考的都是没复习到的，我选择题是蒙的，大题都是乱编的，晚上睡不着，在会不会挂科。",
-          reply: [
-            "考完担心挂科，可能会让人感到非常焦虑。面对没有把握的考试结果，这种悬在半空中的感觉可能会让人感到煎熬。",
-            "这种情况下产生焦虑是很正常的。你能考上这所学校，就说明你有应对的能力。建议你先放松下来，等成绩出来再说，天塌不下来。"
-          ] },
-        { id: 14, title: "生日没人记得", userMessage: "今天是我生日，在宿舍等到晚上十一点。手机静悄悄的，没有消息，没有电话，我期待了很久但是发现没有人记得。",
-          reply: [
-            "生日没人记得，可能会让人感到非常失落。在宿舍等到晚上十一点，手机静悄悄的，这种被遗忘的感觉可能会让人觉得心里堵得慌。",
-            "这种情况下产生失落是很正常的。大家可能只是忙忘了，这不代表你不被记住。建议你为自己庆祝一下，你永远是自己人生的主角。"
-          ] },
-        { id: 15, title: "网红餐厅分量少味道差", userMessage: "我特地出门去尝试很多人推荐的餐厅，菜品的图片上看着特别有食欲。端上来发现分量只有图片一半，味道也一般。",
-          reply: [
-            "网红餐厅分量少味道差，可能会让人感到非常生气。特地出门去尝试，结果上当受骗，这种被欺骗的感觉可能会让人觉得气不打一处来。",
-            "这种情况下产生生气是很正常的。踩雷也是探店的一部分。建议你换个角度想，至少你排除了一家店铺，下次看到好评就会多一个心眼。"
-          ] },
-        { id: 16, title: "上课被老师目光扫到", userMessage: "上着课，老师突然停下，抽人回答问题，我根本没听课，但是老师的目光正在慢慢扫过教室，班里一片寂静。",
-          reply: [
-            "上课怕被老师点到，可能会让人感到非常紧张。老师突然停下来抽人回答问题，目光慢慢扫过教室，这种悬在半空中的不安可能会让人心怦怦跳。",
-            "这种情况下产生紧张是很正常的。其实不只你这样，这是学生面对提问天然的反应。建议你把注意力从\"会不会被点到\"转到\"怎么回答\"上。"
-          ] }
+    // ==================== 16个情境数据（风格A - 情感共情）====================
+    // 每个情境概率相等，通过随机抽取实现
+    const SITUATIONS_A = [
+        { id: 1, title: "考研失利",
+          userMessage: "准备了三个月的考研，每天图书馆开门去闭馆回，推掉了所有社交。今天查分，我发现分数比分数线低了二十分。",
+          reply: ["我真的能感受到你现在有多失落，三个月拼尽全力，早出晚归，结果却与期望相差甚远，仿佛这一路的坚持都失去了意义。这种落差感，我想想都觉得堵得慌。",
+                  "我不会说\"这没什么\"，因为如果我是你，也会感到意难平。考试失利的挫败，对未来的迷茫，对自己的质疑压在你身上，真的太沉重了。但我要说：你不是失败者，一次成绩不能定义你是谁、你的未来。那三个月锤炼的自律和坚持比分数本身更珍贵。",
+                  "现在先允许自己难过，好好休息。那些披星戴月的日子不会白费，会变成未来你走下去的底气。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 2, title: "面试说缺点被拒",
+          userMessage: "今天去面试，HR最后问\"你最大的缺点是什么\"。我脑子一热说了实话，她说\"那我们再考虑一下\"。出门就知道没戏了。",
+          reply: ["我真的能感受到你现在有多懊悔，想着如果不是面试时脑子一热说实话，说不定就被录用了，现在坦诚反而成了减分项。这种憋屈感，我想想都觉得心里不是滋味。",
+                  "我不会说\"这没什么\"，因为如果我是你，也会因为这样失去机会，感到后悔万分。一遍遍回想，责怪自己，真的难以释怀。但我要说：你的真诚从来都不是错，只是没遇到欣赏你的人。那份愿意自我剖析的勇气，比一个迎合别人的标准答案珍贵得多。",
+                  "别再怪自己了，换个角度想，这只是在帮你筛掉不合适的地方。更好的机会，一定在后面等你。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 3, title: "论文写完蓝屏丢失",
+          userMessage: "明早八点要交论文，我写到凌晨三点终于写完。保存时电脑突然蓝屏，重启后文档里什么都没有了。",
+          reply: ["我真的能感受到你现在有多崩溃，写论文到凌晨三点终于写完，保存时电脑突然蓝屏，什么都没有了。这种功败垂成的感觉，我想想都觉得喘不过气。",
+                  "我不会说\"这没什么\"，因为如果我是你，想着明天就要交，时间根本来不及重写，担心这门课会不会挂掉，也会感到绝望又抓狂。但我要说：你能撑到现在已经很不容易了，别再责怪自己了。那些写进脑子里的内容不会消失，你既然能写好一次，就一定能更快、更稳地再写一次。",
+                  "现在或许可以去洗把脸，吃点东西，缓一缓，你比想象中更有力量。如果有什么我能帮上忙的，尽管找我，我一直在。"] },
+        { id: 4, title: "汇报课PPT突然放音乐",
+          userMessage: "今天是汇报课，我点击播放PPT，安静的教室里突然传出很大声的背景音乐，所有人都抬头看着我。",
+          reply: ["我真的能感受到你现在有多尴尬，安静的教室里突然炸出背景音乐，所有人齐刷刷抬头看你，好像你故意搞了个开场秀。这种社死感，我想想都觉得脚趾抠地。",
+                  "我不会说\"这没什么\"，因为如果我是你，一下子成为全班的焦点，也会感觉难以适应，恨不得想立刻结束这一切。但我想告诉你：你能勇敢地站在台上汇报做的已经很好了。这种突如其来的小插曲，大家笑一笑就过去了，没有人会一直记得，也不会因此给你贴标签。",
+                  "现在试试深呼吸，做点喜欢的事分散注意力。你越淡定，这件事就越快翻篇。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 5, title: "吐槽作业发错群",
+          userMessage: "老师刚在课程群发了作业通知，我想在宿舍群里：\"这课作业又多又水，写完记得交\"。发完才发现刚才那句话发到了课程群。",
+          reply: ["我真的能感受到你现在有多尴尬，想吐槽作业结果发到了课程群，老师和同学都可能看到了那句\"大实话\"，好像背后说坏话被当场抓包，这种社死感，我想想都觉得头皮发麻。",
+                  "我不会说\"这没什么\"，因为如果我是你，也会感到窘迫，担心老师会不会记仇，也怕这件事被大家记住，以后见面总觉得不自在。但我想告诉你：老师也是从学生过来的，大概率一笑而过，不会因为一条手滑的消息就怪罪你。",
+                  "可以先试试撤回，不行就做点喜欢的事分散注意力，让消息静静沉底，大家很快就会忘记。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 6, title: "选课网络卡住",
+          userMessage: "选课系统今天早上十点开放，室友都抢到了自己心仪的课程，但是我的网络卡的根本进不去。",
+          reply: ["我真的能感受到你现在有多焦急，室友都抢到了心仪的课，只有你的屏幕一直在转圈，别人都在欢呼，你却连页面都刷不出来，这种被落下的感觉，我想想都觉得心急如焚。",
+                  "我不会说\"这没什么\"，因为如果我是你，要担心学分不够或者下个学期要单独去上多几门课，也会觉得难受，不安。但我要说：大学选课系统的崩溃是常态，你不是一个人，这也不是针对你。后面肯定还有补选和退课的机会，你一定能修够学分的。",
+                  "现在试试换手机热点，让室友帮忙试试，或者找找辅导员和学委，总会有办法的。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 7, title: "接力赛掉棒",
+          userMessage: "学院趣味运动会接力赛，我们组一直领先，交接棒传给我时我没接住，最后只拿了第四，但所有人都跟我说没关系。",
+          reply: ["我真的能感受到你现在有多内疚，全组一直领先，交接棒在你手里掉了，最后只拿了第四，让团队与胜利失之交臂，这种感觉，我想想都觉得难以承受。",
+                  "我不会说\"这没什么\"，因为如果我是你，拖累了别人，辜负队友的期望，也会觉得愧疚。但我想要说：这或许就是团体赛的意义：赢了一起狂，输了一起扛。大家说\"没关系\"是真心的，因为他们看到的是你拼尽全力的样子，不是那一个失误。",
+                  "现在可以让自己先缓一缓，透透气，然后试着接受队友的好意，你愧疚恰恰说明你是一个有担当的人。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 8, title: "凌晨打蚊子找不到",
+          userMessage: "凌晨三点被蚊子咬醒，我起来打蚊子打了半小时。刚躺下，耳边又有嗡嗡声，开着灯找了一圈没找到。",
+          reply: ["我真的能感受到你现在有多烦躁，凌晨被咬醒，打了半小时蚊子，刚躺下耳边又嗡嗡响，打又打不到睡又睡不着，这种反复被折腾的体验，我想想也觉得无法冷静。",
+                  "我不会说\"这没什么\"，因为如果我是你，深夜里被一只看不见的蚊子反复挑衅，也会烦的想除掉所有蚊子，这是一种长期忍耐后的自然释放。而且被咬的地方一定很痒，睡不好明天整个人都会难受，还会影响工作或学习。",
+                  "现在可以试试耳塞或者蚊帐，慢慢平复自己的情绪，希望你能好好睡个觉。你已经很疲惫了，太需要被好好放过。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 9, title: "食堂被撞洒饭",
+          userMessage: "今天在食堂吃饭，我端着盘子找位置时被人撞了一下。整盘饭洒在地上，汤汁溅了一裤子，那人头也不回走了。",
+          reply: ["我真的能感受到你现在有多愤怒，你本来只是想去吃顿饭，结果莫名其妙被人撞了，饭菜撒了一身，那人却头也不回地走了，这种被冒犯的感觉，我想想都觉得窝火。",
+                  "我不会说\"这没什么\"，因为如果我是你，受到无妄之灾，肇事者却没有一点歉意，还要被迫收拾残局，也会觉得愤懑。但我想说：你没有当场失控，做的真的很好了，那个人确实没素质，所以不值得你用更大的情绪惩罚自己。你的时间和心情是最要紧的。",
+                  "现在或许可以骂两句解解气，去换一身衣服，再重新买一份饭，别让这个人毁了你的午餐。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 10, title: "小组作业被白嫖者批评",
+          userMessage: "小组作业，我一个人做完了整个PPT，调了格式，晚上发到群里，那个什么都没干的人回了一句：\"你这做的是什么啊。\"",
+          reply: ["我真的能感受到你现在有多愤怒，一个人把整个PPT都做完了，那个什么都没干的人，居然还有脸理直气壮地挑三拣四，这种被冒犯的感觉，我想都觉得无语至极。",
+                  "我不会说\"这没什么\"，因为如果我是你，也会觉得最难受的不是被批评，而是被一个什么都没做的人批评。但我想告诉你：你做的东西好不好，轮不到任何人去评价。你的努力值得被尊重，那份独自扛下所有的担当，胜过所有言语。",
+                  "现在或许可以隔空骂上两句发泄一下，或者直接在群里@，让对方拿出修改方案，把问题丢回去。别自己生闷气。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 11, title: "银行排队一小时被劝退",
+          userMessage: "今天去银行办业务，排队等了一个小时。轮到我的时候工作人员说\"系统升级，办不了，明天再来吧\"。",
+          reply: ["我真的能感受到你现在有多愤怒，排队等了一个小时，轮到你工作人员说\"系统升级办不了，明天再来\"，好像你的一小时根本不值得他们提前通知一声，这种被耍的感觉，我想想都觉得窝火。",
+                  "我不会说\"这没什么\"，因为如果我是你，白白浪费了一小时，明天还要再来排一次，耽误工作学习，也会感到很气愤。但我想告诉你：你完全有权利表达不满，现在没有将怒火发泄在员工身上，做得真的很好了。",
+                  "现在先别憋着，找朋友吐吐槽，或者在心里骂一句都行。今天已经被耽误了，别再让它继续耗着你。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 12, title: "周末又被强制开会",
+          userMessage: "我的周末又没了，班级群通知周六早上九点开\"动员大会\"，必须签到。这已经是本周第三个强制参加的会。",
+          reply: ["我真的能感受到你现在有多厌烦，周末又被占了，这已经是本周第三个必须参加的会，好像你的休息时间根本不属于自己。这种被强行安排、身不由己的感觉，我光是想想都觉得压抑又无力。",
+                  "我不会说\"这没什么\"，因为如果我是你，一次次看着自己的时间被无端占用，也会对这些没意义的会议感到特别疲惫和烦躁。你已经坚持去了两场，真的很不容易了。既然躲不掉，就尽量在会上放空自己，别再让这件事额外消耗你。",
+                  "开完会可以做点让自己舒服的事，出去走走或者吃点喜欢的东西。你的周末并没有消失，只是被插入了一段很烦人的插曲。你想说什么都可以，我都在。"] },
+        { id: 13, title: "考后担心挂科",
+          userMessage: "刚考完一门课，考的都是没复习到的，我选择题是蒙的，大题都是乱编的，晚上睡不着，在会不会挂科。",
+          reply: ["我真的能感受到你现在有多焦虑，考试没复习好，题目不会写只能乱蒙，晚上失眠，担心会不会挂科，这种悬在半空中的感觉，我想想都觉得太煎熬了。",
+                  "我不会说\"这没什么\"，因为如果我是你，面对没有把握的考试结果，也会感到不安。但这恰恰说明你对学业的重视，先别自己吓自己，成绩还没出来，一切都还没有定论。你要知道之前能考上这所学校，就说明你有应对的能力。天塌不下来，总会有办法的。",
+                  "现在或许可以去泡个脚或者听点轻音乐，放松下来，你的身体需要好好休息来面对后续的挑战。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 14, title: "生日没人记得",
+          userMessage: "今天是我生日，在宿舍等到晚上十一点。手机静悄悄的，没有消息，没有电话，我期待了很久但是发现没有人记得。",
+          reply: ["我真的能感受到你现在有多失落，在宿舍等到晚上十一点，手机静悄悄的，没有消息没有电话，好像这一天跟其他364天毫无区别，这种被遗忘的感觉，我想想都觉得有点酸涩。",
+                  "我不会说\"这没什么\"，因为如果我是你，也会觉得自己不重要，没人在乎，真的太难受了。但我要说：大家可能只是忙忘了，这不代表你不被记住。要记住你永远是自己人生的主角。虽然有点迟，但我还是要跟你说\"生日快乐\"。",
+                  "或许你可以过一个特别的生日，为自己庆祝，为自己准备礼物。你的生日，因为你的存在而特别。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 15, title: "网红餐厅踩雷",
+          userMessage: "我特地出门去尝试很多人推荐的餐厅，菜品的图片上看着特别有食欲。端上来发现分量只有图片一半，味道也一般。",
+          reply: ["我真的能感受到你现在有多生气，明明期待了很久，专门跑了一趟，结果端上来的东西跟图片差太远，分量少、味道也一般。这种被欺骗的感觉，换谁都会觉得气不打一处来。",
+                  "我不会说\"这没什么\"，因为如果我是你，花了钱还吃得不开心，也会感到扫兴至极。但我要说：这不是你的问题，是那家店实在配不上你的期待。不过换个角度想想，你也不是完全没收获，至少你排除了一家店铺，并且下次看到类似的好评，就会多一个心眼。",
+                  "现在或许可以好好吐槽一下，发泄发泄心情。你的味蕾值得更好的。还有什么想说的或者只想静一静都可以，我一直在。"] },
+        { id: 16, title: "上课被老师目光扫到",
+          userMessage: "上着课，老师突然停下，抽人回答问题，我根本没听课，但是老师的目光正在慢慢扫过教室，班里一片寂静。",
+          reply: ["我真的能感受到你现在有多紧张，老师突然停下来抽人回答问题，目光慢慢扫过教室，班里一片寂静，总感觉下一秒就会点到自己，这种悬在半空中的不安，我想想都觉得心脏砰砰跳。",
+                  "我不会说\"这没什么\"，因为如果我是你，也会心慌，怕被点到答不上来丢脸，担心给老师留下不好的印象，真的太煎熬了。但我要说：其实不只你这样，这是学生面对提问天然的反应。况且也没有规定你必须要会回答。",
+                  "现在试试深呼吸，把注意力从\"会不会被点到\"转到\"怎么回答\"上，可能你就有解决方案，也就不怕了。还有什么想说的或者只想静一静都可以，我一直在。"] }
     ];
 
-    let experimentState = { group: "B", situation: null, completed: false, isTyping: false, chatEnded: false };
-    let continueTimer = null;
+    let experimentState = { group: "A", situation: null, completed: false, isTyping: false, chatEnded: false };
 
     function updateProgressDots(screenNum) {
         const dots = document.querySelectorAll('.progress-dot');
@@ -247,30 +571,10 @@
         updateProgressDots(n);
     }
 
+    // 随机抽取情境，16个情境概率相等
     function randomSituation() {
-        return SITUATIONS[Math.floor(Math.random() * SITUATIONS.length)];
-    }
-
-    function addUserMessage(text) {
-        const container = document.getElementById('chatMessages');
-        const div = document.createElement('div');
-        div.className = 'user-message';
-        div.innerHTML = `<div class="user-bubble">${escapeHtml(text)}</div>`;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function addAgentMessage(text) {
-        const container = document.getElementById('chatMessages');
-        const div = document.createElement('div');
-        div.className = 'agent-message-wrapper';
-        div.innerHTML = `
-            <div class="agent-message-area">
-                <div class="agent-bubble">${escapeHtml(text)}</div>
-            </div>
-        `;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
+        const randomIndex = Math.floor(Math.random() * SITUATIONS_A.length);
+        return SITUATIONS_A[randomIndex];
     }
 
     function escapeHtml(str) {
@@ -280,6 +584,15 @@
             if (m === '>') return '&gt;';
             return m;
         }).replace(/\n/g, '<br>');
+    }
+
+    function addUserMessage(text) {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'user-message';
+        div.innerHTML = `<div class="user-bubble">${escapeHtml(text)}</div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
     }
 
     async function typeText(element, text, speed = 12) {
@@ -317,7 +630,10 @@
         container.scrollTop = container.scrollHeight;
     }
 
-    function hideThinking() { const el = document.getElementById('thinking'); if (el) el.remove(); }
+    function hideThinking() {
+        const el = document.getElementById('thinking');
+        if (el) el.remove();
+    }
 
     async function handleSendChat() {
         if (experimentState.completed || experimentState.isTyping || experimentState.chatEnded) return;
@@ -346,7 +662,6 @@
         experimentState.completed = true;
         experimentState.chatEnded = true;
 
-        // 回复完成后立即显示继续按钮
         const continueBtn = document.getElementById('continueToCodeBtn');
         continueBtn.style.display = 'block';
         continueBtn.disabled = false;
@@ -356,7 +671,7 @@
 
     function goToCodePage() {
         if (experimentState.completed) {
-            const code = `${experimentState.situation.id}B`;
+            const code = `${experimentState.situation.id}A`;
             document.getElementById('expCode').innerText = code;
             showScreen(5);
         }
