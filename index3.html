@@ -409,13 +409,13 @@
         </div>
     </div>
 
-    <!-- 屏幕2：交互前指导语（旁观者视角） -->
+    <!-- 屏幕2：交互前指导语 -->
     <div class="screen" id="screen2">
         <div class="page-header"><h1>实验说明</h1></div>
         <div class="form-content">
             <div class="instruction-box">
                 <p>接下来，你将与一位名为ELSA的智能体对话。这个智能体经过专门训练，能够理解人类的情绪，并为情境中的当事人提供情感支持。</p>
-                <p>你将阅读一个关于"小A"的生活情境。<strong>请以旁观者的身份，自然观看小A的经历，体会小A当时的情绪和感受。</strong></p>
+                <p>小A是生活中的陌生人。<strong>请从旁观者的角度，阅读小A的经历。</strong></p>
                 <p><strong>认真阅读完情境后点击进入对话，再点击发送。</strong></p>
                 <p>请仔细阅读情境和智能体的回复，然后根据你的真实感受<strong>认真</strong>回答后续问题。</p>
                 <p style="margin-top:12px;">点击"开始对话"进入实验。</p>
@@ -464,7 +464,7 @@
 </div>
 
 <script>
-    const WJX_URL = "https://v.wjx.cn/vm/PDGKHYF.aspx";
+    const WJX_URL = "https://v.wjx.cn/vm/hWcLFAL.aspx#";
 
     const SITUATIONS_A = [
         { id: 1, title: "考研失利",
@@ -546,7 +546,7 @@
           userMessage: "上着课，老师突然停下，抽人回答问题，小A根本没听课，但是老师的目光正在慢慢扫过教室，班里一片寂静。",
           reply: ["我真的能感受到小A现在有多紧张，老师突然停下来抽人回答问题，目光慢慢扫过教室，班里一片寂静，总感觉下一秒就会点到自己，这种悬在半空中的不安，我想想都觉得心脏砰砰跳。",
                   "我不会说\"这没什么\"，因为如果我是小A，也会心慌，怕被点到答不上来丢脸，担心给老师留下不好的印象，真的太煎熬了。但我要说：其实不只小A这样，这是学生面对提问天然的反应。况且也没有规定小A必须要会回答。",
-                  "现在小A可以试试深呼吸，把注意力从\"会不会被点到\"转到\"怎么回答\"上，可能就有解决方案，也就不怕了。还有什么想说的或者只想静一静都可以，我一直在。"] }
+                  "现在小A试试深呼吸，把注意力从\"会不会被点到\"转到\"怎么回答\"上，可能就有解决方案，也就不怕了。还有什么想说的或者只想静一静都可以，我一直在。"] }
     ];
 
     let experimentState = { group: "A", situation: null, completed: false, isTyping: false, chatEnded: false };
