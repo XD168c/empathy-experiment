@@ -409,13 +409,13 @@
         </div>
     </div>
 
-    <!-- 屏幕2：交互前指导语 -->
+    <!-- 屏幕2：交互前指导语（旁观者视角） -->
     <div class="screen" id="screen2">
         <div class="page-header"><h1>实验说明</h1></div>
         <div class="form-content">
             <div class="instruction-box">
-                <p>接下来，你将与一位名为ELSA的智能体对话。这个智能体经过专门训练，能够理解人类的情绪，并用心为你提供情感支持。</p>
-                <p>你将阅读一个生活中可能遇到的情境。<strong>请尽可能代入情境，把自己当作情境中的"小A"，用心体会当时的心情和感受。</strong></p>
+                <p>接下来，你将与一位名为ELSA的智能体对话。这个智能体经过专门训练，能够理解人类的情绪，并为情境中的当事人提供情感支持。</p>
+                <p>你将阅读一个关于"小A"的生活情境。<strong>请以旁观者的身份，自然观看小A的经历，体会小A当时的情绪和感受。</strong></p>
                 <p><strong>认真阅读完情境后点击进入对话，再点击发送。</strong></p>
                 <p>请仔细阅读情境和智能体的回复，然后根据你的真实感受<strong>认真</strong>回答后续问题。</p>
                 <p style="margin-top:12px;">点击"开始对话"进入实验。</p>
@@ -426,7 +426,7 @@
 
     <!-- 屏幕3：情境阅读 -->
     <div class="screen" id="screen3">
-        <div class="page-header"><h1>情境阅读</h1><p>请仔细阅读以下情境，把自己代入其中</p></div>
+        <div class="page-header"><h1>情境阅读</h1><p>请仔细阅读以下情境</p></div>
         <div class="form-content" id="situationContainer"></div>
         <div class="reading-timer" id="readingTimer">请仔细阅读...</div>
         <button class="next-step-btn" id="nextToChatBtn" style="display:none;">点击进入对话 →</button>
@@ -464,10 +464,8 @@
 </div>
 
 <script>
-    // ==================== 问卷星链接 ====================
     const WJX_URL = "https://v.wjx.cn/vm/tUa5AWa.aspx";
 
-    // ==================== 16个情境数据（风格B - 认知共情，使用小A）====================
     const SITUATIONS_B = [
         { id: 1, title: "考研失利",
           userMessage: "准备了三个月的考研，每天图书馆开门去闭馆回，推掉了所有社交。今天查分，小A发现分数比分数线低了二十分。",
