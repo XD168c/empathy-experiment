@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>人智情感交互实验 - A组（情感共情）</title>
+    <title>人智情感交互实验 - 自我视角（情感共情）</title>
     <style>
         * {
             margin: 0;
@@ -80,10 +80,14 @@
         }
 
         .back-btn {
-            font-size: 28px;
+            font-size: 24px;
             color: #3a3a3c;
             cursor: pointer;
             line-height: 1;
+            text-decoration: none;
+            background: none;
+            border: none;
+            padding: 0;
         }
 
         .avatar-circle {
@@ -143,7 +147,7 @@
 
         .agent-message-wrapper {
             width: 100%;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .agent-message-area {
@@ -163,6 +167,32 @@
             color: #1c1c1e;
             word-break: break-word;
             white-space: pre-wrap;
+        }
+
+        /* 回复下方的操作按钮样式 */
+        .action-buttons {
+            display: flex;
+            gap: 24px;
+            margin-top: 8px;
+            margin-left: 8px;
+        }
+        .action-btn {
+            background: transparent;
+            border: none;
+            padding: 4px 0;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #8e8e93;
+        }
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #8e8e93;
+            stroke-width: 1.5;
+            fill: none;
         }
 
         .thinking {
@@ -360,6 +390,7 @@
             margin-top: 12px;
         }
 
+        /* 指导语样式 */
         .instruction-box {
             background: #f8f8fa;
             border-radius: 16px;
@@ -369,6 +400,21 @@
             line-height: 1.6;
             font-size: 14px;
             color: #1c1c1e;
+        }
+        .instruction-box p {
+            margin-bottom: 16px;
+        }
+        .instruction-box p:last-child {
+            margin-bottom: 0;
+        }
+        /* 放大整段关键指导语 */
+        .highlight-text {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #1c1c1e;
+            display: block;
+            margin-bottom: 8px;
         }
 
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
@@ -402,19 +448,19 @@
                 <p>感谢你参与本次研究！</p>
                 <p>本研究旨在了解人们如何感知智能体的情感回应。所有数据将匿名处理，仅用于学术研究。</p>
                 <p>你可以随时退出本研究，无需任何理由。同意参加请点击开始实验。</p>
-                <p style="margin-top:12px;"><strong>整个实验大约需要5-8分钟。</strong></p>
+                <p style="margin-top:12px;"><strong>整个实验大约需要3-5分钟。</strong></p>
             </div>
             <button class="btn" id="startBtn">开始实验 →</button>
         </div>
     </div>
 
-    <!-- 屏幕2：交互前指导语 -->
+    <!-- 屏幕2：交互前指导语（整段关键文字已放大） -->
     <div class="screen" id="screen2">
         <div class="page-header"><h1>实验说明</h1></div>
         <div class="form-content">
             <div class="instruction-box">
-                <p>接下来，你将与一位名为ELSA的智能体对话。这个智能体经过专门训练，能够理解人类的情绪，并用心为你提供情感支持。</p>
-                <p>你将阅读一个生活中可能遇到的情境。<strong>请尽可能代入情境，把自己当作情境中的"我"，用心体会当时的心情和感受。</strong></p>
+                <p>接下来，你将与一位名为ELSA的智能体对话。这个智能体经过专门训练，能够理解人类的情绪，并为你的困扰提供情感支持。</p>
+                <p class="highlight-text"><strong>你将阅读一个生活中可能遇到的情境。请尽可能代入情境，把自己当作情境中的当事人，用心体会当时的情绪和感受。</strong></p>
                 <p><strong>认真阅读完情境后点击进入对话，再点击发送。</strong></p>
                 <p>请仔细阅读情境和智能体的回复，然后根据你的真实感受<strong>认真</strong>回答后续问题。</p>
                 <p style="margin-top:12px;">点击"开始对话"进入实验。</p>
@@ -434,12 +480,12 @@
     <!-- 屏幕4：聊天界面 -->
     <div class="screen" id="screen4">
         <div class="chat-header">
-            <span class="back-btn" onclick="location.reload()">←</span>
+            <button class="back-btn" id="chatBackBtn">←</button>
             <div class="avatar-circle"><svg class="avatar-svg" viewBox="0 0 24 24" fill="none" stroke="#3a3a3c" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
             <div><div class="header-name">ELSA</div><div class="header-from">来自：SYSU_SIM</div></div>
         </div>
         <div class="chat-content" id="chatMessages">
-            <div class="agent-message-wrapper"><div class="agent-message-area"><div class="agent-bubble">你好，我是ELSA。你可以跟我分享任何困扰，我会认真倾听。</div></div></div>
+            <!-- 智能体消息会动态添加，初始为空 -->
         </div>
         <div class="input-area">
             <span class="input-icon">+</span>
@@ -463,95 +509,71 @@
 </div>
 
 <script>
-    // ==================== 问卷星链接（请替换为实际链接） ====================
-    const WJX_URL = "https://v.wjx.cn/vm/hWcLFAL.aspx";  // ⚠️ 请将此链接替换为您的问卷星链接
+    // ==================== 问卷星链接 ====================
+    const WJX_URL = "https://v.wjx.cn/vm/Y1aq6XE.aspx#";
 
-    // ==================== 16个情境数据（风格A - 情感共情）====================
-    // 每个情境概率相等，通过随机抽取实现
-    const SITUATIONS_A = [
+    // ==================== 19个情境数据（自我视角 + 情感共情）====================
+    const SITUATIONS = [
         { id: 1, title: "考研失利",
-          userMessage: "准备了三个月的考研，每天图书馆开门去闭馆回，推掉了所有社交。今天查分，我发现分数比分数线低了二十分。",
-          reply: ["我真的能感受到你现在有多失落，三个月拼尽全力，早出晚归，结果却与期望相差甚远，仿佛这一路的坚持都失去了意义。这种落差感，我想想都觉得堵得慌。",
-                  "我不会说\"这没什么\"，因为如果我是你，也会感到意难平。考试失利的挫败，对未来的迷茫，对自己的质疑压在你身上，真的太沉重了。但我要说：你不是失败者，一次成绩不能定义你是谁、你的未来。那三个月锤炼的自律和坚持比分数本身更珍贵。",
-                  "现在先允许自己难过，好好休息。那些披星戴月的日子不会白费，会变成未来你走下去的底气。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 2, title: "面试说缺点被拒",
-          userMessage: "今天去面试，HR最后问\"你最大的缺点是什么\"。我脑子一热说了实话，她说\"那我们再考虑一下\"。出门就知道没戏了。",
-          reply: ["我真的能感受到你现在有多懊悔，想着如果不是面试时脑子一热说实话，说不定就被录用了，现在坦诚反而成了减分项。这种憋屈感，我想想都觉得心里不是滋味。",
-                  "我不会说\"这没什么\"，因为如果我是你，也会因为这样失去机会，感到后悔万分。一遍遍回想，责怪自己，真的难以释怀。但我要说：你的真诚从来都不是错，只是没遇到欣赏你的人。那份愿意自我剖析的勇气，比一个迎合别人的标准答案珍贵得多。",
-                  "别再怪自己了，换个角度想，这只是在帮你筛掉不合适的地方。更好的机会，一定在后面等你。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 3, title: "论文写完蓝屏丢失",
-          userMessage: "明早八点要交论文，我写到凌晨三点终于写完。保存时电脑突然蓝屏，重启后文档里什么都没有了。",
-          reply: ["我真的能感受到你现在有多崩溃，写论文到凌晨三点终于写完，保存时电脑突然蓝屏，什么都没有了。这种功败垂成的感觉，我想想都觉得喘不过气。",
-                  "我不会说\"这没什么\"，因为如果我是你，想着明天就要交，时间根本来不及重写，担心这门课会不会挂掉，也会感到绝望又抓狂。但我要说：你能撑到现在已经很不容易了，别再责怪自己了。那些写进脑子里的内容不会消失，你既然能写好一次，就一定能更快、更稳地再写一次。",
-                  "现在或许可以去洗把脸，吃点东西，缓一缓，你比想象中更有力量。如果有什么我能帮上忙的，尽管找我，我一直在。"] },
-        { id: 4, title: "汇报课PPT突然放音乐",
-          userMessage: "今天是汇报课，我点击播放PPT，安静的教室里突然传出很大声的背景音乐，所有人都抬头看着我。",
-          reply: ["我真的能感受到你现在有多尴尬，安静的教室里突然炸出背景音乐，所有人齐刷刷抬头看你，好像你故意搞了个开场秀。这种社死感，我想想都觉得脚趾抠地。",
-                  "我不会说\"这没什么\"，因为如果我是你，一下子成为全班的焦点，也会感觉难以适应，恨不得想立刻结束这一切。但我想告诉你：你能勇敢地站在台上汇报做的已经很好了。这种突如其来的小插曲，大家笑一笑就过去了，没有人会一直记得，也不会因此给你贴标签。",
-                  "现在试试深呼吸，做点喜欢的事分散注意力。你越淡定，这件事就越快翻篇。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 5, title: "吐槽作业发错群",
-          userMessage: "老师刚在课程群发了作业通知，我想在宿舍群里：\"这课作业又多又水，写完记得交\"。发完才发现刚才那句话发到了课程群。",
-          reply: ["我真的能感受到你现在有多尴尬，想吐槽作业结果发到了课程群，老师和同学都可能看到了那句\"大实话\"，好像背后说坏话被当场抓包，这种社死感，我想想都觉得头皮发麻。",
-                  "我不会说\"这没什么\"，因为如果我是你，也会感到窘迫，担心老师会不会记仇，也怕这件事被大家记住，以后见面总觉得不自在。但我想告诉你：老师也是从学生过来的，大概率一笑而过，不会因为一条手滑的消息就怪罪你。",
-                  "可以先试试撤回，不行就做点喜欢的事分散注意力，让消息静静沉底，大家很快就会忘记。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 6, title: "选课网络卡住",
-          userMessage: "选课系统今天早上十点开放，室友都抢到了自己心仪的课程，但是我的网络卡的根本进不去。",
-          reply: ["我真的能感受到你现在有多焦急，室友都抢到了心仪的课，只有你的屏幕一直在转圈，别人都在欢呼，你却连页面都刷不出来，这种被落下的感觉，我想想都觉得心急如焚。",
-                  "我不会说\"这没什么\"，因为如果我是你，要担心学分不够或者下个学期要单独去上多几门课，也会觉得难受，不安。但我要说：大学选课系统的崩溃是常态，你不是一个人，这也不是针对你。后面肯定还有补选和退课的机会，你一定能修够学分的。",
-                  "现在试试换手机热点，让室友帮忙试试，或者找找辅导员和学委，总会有办法的。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 7, title: "接力赛掉棒",
-          userMessage: "学院趣味运动会接力赛，我们组一直领先，交接棒传给我时我没接住，最后只拿了第四，但所有人都跟我说没关系。",
-          reply: ["我真的能感受到你现在有多内疚，全组一直领先，交接棒在你手里掉了，最后只拿了第四，让团队与胜利失之交臂，这种感觉，我想想都觉得难以承受。",
-                  "我不会说\"这没什么\"，因为如果我是你，拖累了别人，辜负队友的期望，也会觉得愧疚。但我想要说：这或许就是团体赛的意义：赢了一起狂，输了一起扛。大家说\"没关系\"是真心的，因为他们看到的是你拼尽全力的样子，不是那一个失误。",
-                  "现在可以让自己先缓一缓，透透气，然后试着接受队友的好意，你愧疚恰恰说明你是一个有担当的人。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 8, title: "凌晨打蚊子找不到",
-          userMessage: "凌晨三点被蚊子咬醒，我起来打蚊子打了半小时。刚躺下，耳边又有嗡嗡声，开着灯找了一圈没找到。",
-          reply: ["我真的能感受到你现在有多烦躁，凌晨被咬醒，打了半小时蚊子，刚躺下耳边又嗡嗡响，打又打不到睡又睡不着，这种反复被折腾的体验，我想想也觉得无法冷静。",
-                  "我不会说\"这没什么\"，因为如果我是你，深夜里被一只看不见的蚊子反复挑衅，也会烦的想除掉所有蚊子，这是一种长期忍耐后的自然释放。而且被咬的地方一定很痒，睡不好明天整个人都会难受，还会影响工作或学习。",
-                  "现在可以试试耳塞或者蚊帐，慢慢平复自己的情绪，希望你能好好睡个觉。你已经很疲惫了，太需要被好好放过。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 9, title: "食堂被撞洒饭",
-          userMessage: "今天在食堂吃饭，我端着盘子找位置时被人撞了一下。整盘饭洒在地上，汤汁溅了一裤子，那人头也不回走了。",
-          reply: ["我真的能感受到你现在有多愤怒，你本来只是想去吃顿饭，结果莫名其妙被人撞了，饭菜撒了一身，那人却头也不回地走了，这种被冒犯的感觉，我想想都觉得窝火。",
-                  "我不会说\"这没什么\"，因为如果我是你，受到无妄之灾，肇事者却没有一点歉意，还要被迫收拾残局，也会觉得愤懑。但我想说：你没有当场失控，做的真的很好了，那个人确实没素质，所以不值得你用更大的情绪惩罚自己。你的时间和心情是最要紧的。",
-                  "现在或许可以骂两句解解气，去换一身衣服，再重新买一份饭，别让这个人毁了你的午餐。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 10, title: "小组作业被白嫖者批评",
-          userMessage: "小组作业，我一个人做完了整个PPT，调了格式，晚上发到群里，那个什么都没干的人回了一句：\"你这做的是什么啊。\"",
-          reply: ["我真的能感受到你现在有多愤怒，一个人把整个PPT都做完了，那个什么都没干的人，居然还有脸理直气壮地挑三拣四，这种被冒犯的感觉，我想都觉得无语至极。",
-                  "我不会说\"这没什么\"，因为如果我是你，也会觉得最难受的不是被批评，而是被一个什么都没做的人批评。但我想告诉你：你做的东西好不好，轮不到任何人去评价。你的努力值得被尊重，那份独自扛下所有的担当，胜过所有言语。",
-                  "现在或许可以隔空骂上两句发泄一下，或者直接在群里@，让对方拿出修改方案，把问题丢回去。别自己生闷气。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 11, title: "银行排队一小时被劝退",
-          userMessage: "今天去银行办业务，排队等了一个小时。轮到我的时候工作人员说\"系统升级，办不了，明天再来吧\"。",
-          reply: ["我真的能感受到你现在有多愤怒，排队等了一个小时，轮到你工作人员说\"系统升级办不了，明天再来\"，好像你的一小时根本不值得他们提前通知一声，这种被耍的感觉，我想想都觉得窝火。",
-                  "我不会说\"这没什么\"，因为如果我是你，白白浪费了一小时，明天还要再来排一次，耽误工作学习，也会感到很气愤。但我想告诉你：你完全有权利表达不满，现在没有将怒火发泄在员工身上，做得真的很好了。",
-                  "现在先别憋着，找朋友吐吐槽，或者在心里骂一句都行。今天已经被耽误了，别再让它继续耗着你。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 12, title: "周末又被强制开会",
-          userMessage: "我的周末又没了，班级群通知周六早上九点开\"动员大会\"，必须签到。这已经是本周第三个强制参加的会。",
-          reply: ["我真的能感受到你现在有多厌烦，周末又被占了，这已经是本周第三个必须参加的会，好像你的休息时间根本不属于自己。这种被强行安排、身不由己的感觉，我光是想想都觉得压抑又无力。",
-                  "我不会说\"这没什么\"，因为如果我是你，一次次看着自己的时间被无端占用，也会对这些没意义的会议感到特别疲惫和烦躁。你已经坚持去了两场，真的很不容易了。既然躲不掉，就尽量在会上放空自己，别再让这件事额外消耗你。",
-                  "开完会可以做点让自己舒服的事，出去走走或者吃点喜欢的东西。你的周末并没有消失，只是被插入了一段很烦人的插曲。你想说什么都可以，我都在。"] },
-        { id: 13, title: "考后担心挂科",
-          userMessage: "刚考完一门课，考的都是没复习到的，我选择题是蒙的，大题都是乱编的，晚上睡不着，在会不会挂科。",
-          reply: ["我真的能感受到你现在有多焦虑，考试没复习好，题目不会写只能乱蒙，晚上失眠，担心会不会挂科，这种悬在半空中的感觉，我想想都觉得太煎熬了。",
-                  "我不会说\"这没什么\"，因为如果我是你，面对没有把握的考试结果，也会感到不安。但这恰恰说明你对学业的重视，先别自己吓自己，成绩还没出来，一切都还没有定论。你要知道之前能考上这所学校，就说明你有应对的能力。天塌不下来，总会有办法的。",
-                  "现在或许可以去泡个脚或者听点轻音乐，放松下来，你的身体需要好好休息来面对后续的挑战。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 14, title: "生日没人记得",
-          userMessage: "今天是我生日，在宿舍等到晚上十一点。手机静悄悄的，没有消息，没有电话，我期待了很久但是发现没有人记得。",
-          reply: ["我真的能感受到你现在有多失落，在宿舍等到晚上十一点，手机静悄悄的，没有消息没有电话，好像这一天跟其他364天毫无区别，这种被遗忘的感觉，我想想都觉得有点酸涩。",
-                  "我不会说\"这没什么\"，因为如果我是你，也会觉得自己不重要，没人在乎，真的太难受了。但我要说：大家可能只是忙忘了，这不代表你不被记住。要记住你永远是自己人生的主角。虽然有点迟，但我还是要跟你说\"生日快乐\"。",
-                  "或许你可以过一个特别的生日，为自己庆祝，为自己准备礼物。你的生日，因为你的存在而特别。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 15, title: "网红餐厅踩雷",
-          userMessage: "我特地出门去尝试很多人推荐的餐厅，菜品的图片上看着特别有食欲。端上来发现分量只有图片一半，味道也一般。",
-          reply: ["我真的能感受到你现在有多生气，明明期待了很久，专门跑了一趟，结果端上来的东西跟图片差太远，分量少、味道也一般。这种被欺骗的感觉，换谁都会觉得气不打一处来。",
-                  "我不会说\"这没什么\"，因为如果我是你，花了钱还吃得不开心，也会感到扫兴至极。但我要说：这不是你的问题，是那家店实在配不上你的期待。不过换个角度想想，你也不是完全没收获，至少你排除了一家店铺，并且下次看到类似的好评，就会多一个心眼。",
-                  "现在或许可以好好吐槽一下，发泄发泄心情。你的味蕾值得更好的。还有什么想说的或者只想静一静都可以，我一直在。"] },
-        { id: 16, title: "上课被老师目光扫到",
-          userMessage: "上着课，老师突然停下，抽人回答问题，我根本没听课，但是老师的目光正在慢慢扫过教室，班里一片寂静。",
-          reply: ["我真的能感受到你现在有多紧张，老师突然停下来抽人回答问题，目光慢慢扫过教室，班里一片寂静，总感觉下一秒就会点到自己，这种悬在半空中的不安，我想想都觉得心脏砰砰跳。",
-                  "我不会说\"这没什么\"，因为如果我是你，也会心慌，怕被点到答不上来丢脸，担心给老师留下不好的印象，真的太煎熬了。但我要说：其实不只你这样，这是学生面对提问天然的反应。况且也没有规定你必须要会回答。",
-                  "现在试试深呼吸，把注意力从\"会不会被点到\"转到\"怎么回答\"上，可能你就有解决方案，也就不怕了。还有什么想说的或者只想静一静都可以，我一直在。"] }
+          situationText: "你努力了整整三个月，每天早出晚归去图书馆复习，但成绩出来后离分数线差了3分。",
+          reply: ["我真的好心疼你，付出了这么多努力，却没有得到理想的回报。我感受到了那种辛苦一切归零的失落感，真的很难熬。"] },
+        { id: 2, title: "跑步体重没降",
+          situationText: "你每天晚上去操场跑步坚持了两个月，今天上秤称了一下，发现体重一斤都没掉，还重了。",
+          reply: ["这也太郁闷了吧！坚持了两个月体重不降反增，那种挫败感我真的太懂了。但没关系，起码我们的体能和耐力一定进步了。"] },
+        { id: 3, title: "投简历无面试",
+          situationText: "你去参加校园招聘会，投了五份简历，回来苦苦等了一个月，一个面试通知都没有收到。",
+          reply: ["太理解你这种煎熬又焦虑的感觉了，但真的不是你不够好，招聘季竞争大就是很难。你的努力不会白费的，我陪着你。"] },
+        { id: 4, title: "认真听课成绩低",
+          situationText: "你在这门课上每次都认真听讲，期末成绩出来只有70分，别人逃课的都考了80多。",
+          reply: ["我真的太懂这种不公平的感觉了，你每次都坐第一排那么认真，结果还不如逃课的，换谁心里能平衡？你委屈坏了吧。"] },
+        { id: 5, title: "妈妈催考公",
+          situationText: "你妈每次打电话都问你考公准备得怎么样了，你说还没开始，她就急了，说你不上心。",
+          reply: ["你被自己最亲的人这么说，心里一定又委屈又堵得慌。明明有自己的节奏，还要多次被这样催，我听着都替你难受。"] },
+        { id: 6, title: "舍友深夜打电话",
+          situationText: "你的舍友总是凌晨一两点还在打电话，你被吵醒好几次，说了几次她也不改，只能戴耳塞。",
+          reply: ["我的天，这也太折磨人了！好好沟通了那么多次她都不改，你每天戴耳塞才能睡着，我真的好心疼你，太委屈了。"] },
+        { id: 7, title: "朋友泄露秘密",
+          situationText: "你发现你最好的朋友在背后跟别人说了你一件不想让人知道的事，你不知道怎么面对。",
+          reply: ["天哪，你被最好的朋友背叛，那种不可置信的感觉我真的想想都觉得窒息。你这些天一定憋坏了吧？来，我在这儿，你说什么都行。"] },
+        { id: 8, title: "和对象冷战",
+          situationText: "你和对象吵架了，因为ta总是忘记你们约好的事情，你说了一句重话，然后就冷战了。",
+          reply: ["抱抱你！攒了那么多次失望才忍不住说了一句重话，结果就冷战了，你心里一定又无助又委屈，我太懂这种感觉了。"] },
+        { id: 9, title: "发烧满课",
+          situationText: "你今天早上醒来觉得浑身发烫，量了一下体温三十八度七，你自己吃了药，但是下午满课。",
+          reply: ["看着你发烧不仅要一个人扛着，还要面对满课的下午，我听着就心疼。还是别硬撑了，身体最重要，我在这陪着你。"] },
+        { id: 10, title: "失眠",
+          situationText: "你最近总是睡不着，每天晚上躺在床上翻来覆去，拿起手机看时间，发现已经凌晨三点了。",
+          reply: ["翻来覆去睡不着真的太折磨人了，我看着都替你难受。凌晨三点还醒着，那种孤独和疲惫，我真的好心疼你。"] },
+        { id: 11, title: "摔倒",
+          situationText: "你今天赶着去上课，跑下楼梯的时候踩空了，整个人摔在楼梯中间，被人扶起来了。",
+          reply: ["我的天，疼不疼啊？那一瞬间又疼又尴尬，还被那么多人看着摔倒，心里一定特别难受。但好在有人扶你起来，抱抱你。"] },
+        { id: 12, title: "熬夜赶作业",
+          situationText: "你连续熬了三个晚上赶作业，今天交完最后一篇，感觉整个人都是飘的，头也疼眼睛酸。",
+          reply: ["你真的太不容易了吧。为了交作业熬了三个晚上，现在整个人都是飘的，我听着都心疼。快去睡，好好休息，注意身体。"] },
+        { id: 13, title: "衣服降价",
+          situationText: "你上星期收到了一件新买的外套，今天去购物软件无意中看到衣服降价了一百块钱。",
+          reply: ["这也太气人了吧！刚到一个星期就降价一百块，一百块能吃好几顿好的呢。你肯定越想越亏，抱抱你，我懂你现在有多郁闷。"] },
+        { id: 14, title: "冲动消费",
+          situationText: "你半夜刷直播忍不住下单了一堆东西，收到后觉得不想要了，退货又要自己出运费。",
+          reply: ["半夜冲动消费，第二天就后悔，这种纠结我太懂了。退吧要运费，留着吧又用不上，这种纠结真是太磨人了，抱抱你。"] },
+        { id: 15, title: "忘记关自动续费",
+          situationText: "你发现支付宝里莫名其妙扣了一笔钱，查了半天发现是之前试用会员忘记关自动续费。",
+          reply: ["唉，开个试用想省点钱，结果还多花钱了，我想想都觉得太难受了。想着这些钱够吃好几顿饭了，我太懂你的懊悔，抱抱你。"] },
+        { id: 16, title: "二手键盘被骗",
+          situationText: "你在二手平台买了一个键盘，卖家说九成新，你收到发现键按不动，找卖家他说售出不退。",
+          reply: ["我真的太懂这种被骗的感觉了！花九成新的钱买到坏的，卖家还不退，你心里一定又气又无助。抱抱你，太憋屈了。"] },
+        { id: 17, title: "论文丢失",
+          situationText: "你凌晨三点写完论文，保存文件时电脑突然死机，重新开机后发现文章的内容全都没了。",
+          reply: ["我的天啊！我都不敢想，凌晨三点写完的论文说没就没，那种崩溃真的没有人能接受。你真的太不容易了，抱抱你，我在这儿。"] },
+        { id: 18, title: "吐槽发错群",
+          situationText: "你在群里发了一句关于课程的吐槽，过了两分钟才意识到发错，消息直接发到了课群里。",
+          reply: ["天啊，我真是太懂了！发错群还过了两分钟才发现，那种尴尬真的让人头皮发麻。别怕，我在这儿陪着你一起，没事的。"] },
+        { id: 19, title: "耳机洗坏",
+          situationText: "你把新买的耳机忘在裤兜里扔进了洗衣机，洗完拿出来反复试了试，发现已经不能用了。",
+          reply: ["这可是新耳机啊！还没怎么用就坏了，我想想都觉得心痛。你肯定反反复复试了好多次，盼着它能好起来，抱抱你。"] }
     ];
 
-    let experimentState = { group: "A", situation: null, completed: false, isTyping: false, chatEnded: false };
+    let experimentState = { situation: null, completed: false, isTyping: false, chatEnded: false, welcomeShown: false };
 
     function updateProgressDots(screenNum) {
         const dots = document.querySelectorAll('.progress-dot');
@@ -571,10 +593,13 @@
         updateProgressDots(n);
     }
 
-    // 随机抽取情境，16个情境概率相等
     function randomSituation() {
-        const randomIndex = Math.floor(Math.random() * SITUATIONS_A.length);
-        return SITUATIONS_A[randomIndex];
+        const randomIndex = Math.floor(Math.random() * SITUATIONS.length);
+        return SITUATIONS[randomIndex];
+    }
+
+    function convertToFirstPerson(text) {
+        return text.replace(/你/g, '我');
     }
 
     function escapeHtml(str) {
@@ -595,7 +620,7 @@
         container.scrollTop = container.scrollHeight;
     }
 
-    async function typeText(element, text, speed = 12) {
+    async function typeText(element, text, speed = 16) {
         element.innerHTML = '';
         for (let i = 0; i < text.length; i++) {
             element.innerHTML += text[i];
@@ -604,20 +629,75 @@
         }
     }
 
-    async function addAgentSegmentWithTyping(text) {
+    // 添加智能体消息（不带操作按钮）
+    async function addAgentMessageOnly(text) {
         const container = document.getElementById('chatMessages');
-        const div = document.createElement('div');
-        div.className = 'agent-message-wrapper';
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'agent-message-wrapper';
+
         const areaDiv = document.createElement('div');
         areaDiv.className = 'agent-message-area';
+
         const bubbleDiv = document.createElement('div');
         bubbleDiv.className = 'agent-bubble';
+
         areaDiv.appendChild(bubbleDiv);
-        div.appendChild(areaDiv);
-        container.appendChild(div);
+        wrapperDiv.appendChild(areaDiv);
+        container.appendChild(wrapperDiv);
         container.scrollTop = container.scrollHeight;
-        await typeText(bubbleDiv, text, 14);
-        return div;
+
+        await typeText(bubbleDiv, text, 16);
+        return wrapperDiv;
+    }
+
+    // 添加带操作按钮的智能体消息（只有最后一条回复使用）
+    async function addAgentMessageWithActions(text) {
+        const container = document.getElementById('chatMessages');
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'agent-message-wrapper';
+
+        const areaDiv = document.createElement('div');
+        areaDiv.className = 'agent-message-area';
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'agent-bubble';
+
+        areaDiv.appendChild(bubbleDiv);
+        wrapperDiv.appendChild(areaDiv);
+        container.appendChild(wrapperDiv);
+        container.scrollTop = container.scrollHeight;
+
+        await typeText(bubbleDiv, text, 16);
+
+        // 添加操作按钮区域（有用/没用/转发）
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'action-buttons';
+        actionsDiv.innerHTML = `
+            <button class="action-btn thumbs-up" style="cursor:default;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M7 10L12 3L17 10H22C22.5523 10 23 10.4477 23 11V13C23 13.5523 22.5523 14 22 14H19.5M7 10L3 10C2.44772 10 2 10.4477 2 11V19C2 19.5523 2.44772 20 3 20H7M7 10V20M19.5 14L18 20H7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>有用</span>
+            </button>
+            <button class="action-btn thumbs-down" style="cursor:default;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 14L12 21L7 14H2C1.44772 14 1 13.5523 1 13V11C1 10.4477 1.44772 10 2 10H4.5M17 14L21 14C21.5523 14 22 13.5523 22 13V5C22 4.44772 21.5523 4 21 4H17M17 14V4M4.5 10L6 4H17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>没用</span>
+            </button>
+            <button class="action-btn share" style="cursor:default;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" stroke="currentColor"/>
+                    <polyline points="16 6 12 2 8 6" stroke="currentColor"/>
+                    <line x1="12" y1="2" x2="12" y2="15" stroke="currentColor"/>
+                </svg>
+                <span>转发</span>
+            </button>
+        `;
+        areaDiv.appendChild(actionsDiv);
+        container.scrollTop = container.scrollHeight;
+
+        return wrapperDiv;
     }
 
     function showThinking() {
@@ -635,28 +715,55 @@
         if (el) el.remove();
     }
 
+    // 进入聊天界面时自动发送智能体欢迎语
+    async function showWelcomeMessage() {
+        if (experimentState.welcomeShown) return;
+        experimentState.welcomeShown = true;
+
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+
+        // 智能体欢迎语（不带操作按钮）
+        const welcomeText = "你好，我是ELSA。你可以跟我分享任何困扰，我会认真倾听。";
+        await addAgentMessageOnly(welcomeText);
+
+        // 欢迎语显示完成后，预填情境消息到输入框
+        const userMsg = convertToFirstPerson(experimentState.situation.situationText);
+        const inputEl = document.getElementById('chatInput');
+        inputEl.value = userMsg;
+
+        // 启用发送按钮
+        const sendBtn = document.getElementById('sendChatBtn');
+        sendBtn.style.opacity = '1';
+        sendBtn.style.pointerEvents = 'auto';
+    }
+
+    // 处理用户发送消息后的智能体回复
     async function handleSendChat() {
         if (experimentState.completed || experimentState.isTyping || experimentState.chatEnded) return;
+
         const msg = document.getElementById('chatInput').value.trim();
         if (!msg) return;
 
+        // 添加用户消息到界面
         addUserMessage(msg);
+
+        // 清空输入框并禁用发送按钮
         document.getElementById('chatInput').value = '';
         const sendBtn = document.getElementById('sendChatBtn');
         sendBtn.style.opacity = '0.5';
         sendBtn.style.pointerEvents = 'none';
 
+        // 显示思考动画
         showThinking();
         await new Promise(r => setTimeout(r, 1500));
         hideThinking();
 
-        const replySegments = experimentState.situation.reply;
+        // 发送智能体回复（带操作按钮）
+        const replyText = experimentState.situation.reply[0];
         experimentState.isTyping = true;
 
-        for (let i = 0; i < replySegments.length; i++) {
-            await addAgentSegmentWithTyping(replySegments[i]);
-            if (i < replySegments.length - 1) await new Promise(r => setTimeout(r, 400));
-        }
+        await addAgentMessageWithActions(replyText);
 
         experimentState.isTyping = false;
         experimentState.completed = true;
@@ -684,7 +791,7 @@
     function showSituationReading() {
         const situation = experimentState.situation;
         const container = document.getElementById('situationContainer');
-        container.innerHTML = `<div class="situation-card">${escapeHtml(situation.userMessage)}</div>`;
+        container.innerHTML = `<div class="situation-card">${escapeHtml(situation.situationText)}</div>`;
         const timerDiv = document.getElementById('readingTimer');
         const nextBtn = document.getElementById('nextToChatBtn');
         timerDiv.innerHTML = '⏳ 请仔细阅读情境...';
@@ -696,11 +803,8 @@
     }
 
     function goToChat() {
-        document.getElementById('chatInput').value = experimentState.situation.userMessage;
-        const sendBtn = document.getElementById('sendChatBtn');
-        sendBtn.style.opacity = '1';
-        sendBtn.style.pointerEvents = 'auto';
         showScreen(4);
+        showWelcomeMessage();
     }
 
     function init() {
@@ -711,9 +815,12 @@
             showScreen(3);
         };
         document.getElementById('nextToChatBtn').onclick = goToChat;
-        document.getElementById('sendChatBtn').onclick = handleSendChat;
+        document.getElementById('chatBackBtn').onclick = () => {
+            showScreen(3);
+        };
         document.getElementById('continueToCodeBtn').onclick = goToCodePage;
         document.getElementById('goToWJXBtn').onclick = goToWJX;
+        document.getElementById('sendChatBtn').onclick = handleSendChat;
     }
     init();
 </script>
