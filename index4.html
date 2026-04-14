@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>人智情感交互实验 - 他人视角（认知共情）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+
+        .phone-container {
+            max-width: 420px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .progress {
+            padding: 8px 16px;
+            background: white;
+            border-bottom: 0.5px solid #e9e9ef;
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .progress-dot {
+            flex: 1;
+            height: 4px;
+            background: #e5e5e5;
+            border-radius: 4px;
+            transition: background .3s;
+        }
+
+        .progress-dot.active {
+            background: #3a3a3c;
+        }
+
+        .progress-dot.completed {
+            background: #3a3a3c;
+        }
+
+        .chat-header {
+            padding: 18px 20px;
+            border-bottom: .5px solid #e9e9ef;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            background: #fff;
+        }
+
+        .back-btn {
+            font-size: 24px;
+            color: #3a3a3c;
+            cursor: pointer;
+            line-height: 1;
+            text-decoration: none;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .avatar-circle {
+            width: 48px;
+            height: 48px;
+            background: #fff;
+            border: 1.5px solid #3a3a3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .header-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .header-from {
+            font-size: 13px;
+            color: #8e8e93;
+        }
+
+        .chat-content {
+            background: #f8f8fa;
+            padding: 20px 16px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .user-bubble {
+            max-width: 85%;
+            background: #d4e3fd;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border-bottom-right-radius: 4px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #1c1c1e;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .agent-message-wrapper {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .agent-message-area {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .agent-bubble {
+            max-width: 85%;
+            background: #e5e5ea;
+            padding: 12px 16px;
+            border-radius: 22px;
+            border-bottom-left-radius: 4px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #1c1c1e;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        /* 回复下方的操作按钮样式 */
+        .action-buttons {
+            display: flex;
+            gap: 24px;
+            margin-top: 8px;
+            margin-left: 8px;
+        }
+        .action-btn {
+            background: transparent;
+            border: none;
+            padding: 4px 0;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #8e8e93;
+        }
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: #8e8e93;
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        .thinking {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #e5e5ea;
+            padding: 12px 18px;
+            border-radius: 22px;
+            border-bottom-left-radius: 4px;
+            font-size: 14px;
+            color: #8e8e93;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #8e8e93;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .input-area {
+            padding: 12px 16px 16px;
+            border-top: .5px solid #e9e9ef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            background: #fff;
+        }
+
+        .input-icon {
+            font-size: 22px;
+            color: #3a3a3c;
+            cursor: pointer;
+        }
+
+        .input-placeholder {
+            flex: 1;
+            background: #f5f5f7;
+            border-radius: 24px;
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #8e8e93;
+            border: none;
+            outline: none;
+        }
+
+        .input-placeholder[readonly] {
+            background: #f5f5f7;
+            color: #1c1c1e;
+            cursor: default;
+        }
+
+        .send-btn-circle {
+            background: #3a3a3c;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+
+        .send-btn-circle:disabled {
+            background: #c7c7cc;
+            cursor: not-allowed;
+        }
+
+        .continue-btn {
+            margin: 12px 16px 20px;
+            padding: 12px;
+            background: #3a3a3c;
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: none;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .situation-card {
+            background: #f8f8fa;
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin: 20px 16px;
+            border: 1px solid #e5e5e5;
+            line-height: 1.6;
+            font-size: 16px;
+            color: #1c1c1e;
+        }
+
+        .reading-timer {
+            text-align: center;
+            font-size: 13px;
+            color: #8e8e93;
+            margin: 16px 16px 8px;
+        }
+
+        .next-step-btn {
+            margin: 20px 16px 30px;
+            padding: 14px;
+            background: #3a3a3c;
+            color: #fff;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .page-header {
+            padding: 24px 20px 16px;
+            text-align: center;
+            border-bottom: .5px solid #e9e9ef;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1c1c1e;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: #8e8e93;
+            margin-top: 8px;
+        }
+
+        .form-content {
+            padding: 20px 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #3a3a3c;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .code-box {
+            background: #f0f0f0;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .code-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #3a3a3c;
+            letter-spacing: 4px;
+        }
+
+        .code-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 12px;
+        }
+
+        /* 指导语样式 */
+        .instruction-box {
+            background: #f8f8fa;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e5e5;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #1c1c1e;
+        }
+        .instruction-box p {
+            margin-bottom: 16px;
+        }
+        .instruction-box p:last-child {
+            margin-bottom: 0;
+        }
+        /* 放大整段关键指导语 */
+        .highlight-text {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #1c1c1e;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .input-area {
+                padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            }
+        }
+
+        @media (max-width: 380px) {
+            .code-number {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="phone-container">
+    <div class="progress" id="progressBar">
+        <div class="progress-dot" id="dot1"></div>
+        <div class="progress-dot" id="dot2"></div>
+        <div class="progress-dot" id="dot3"></div>
+        <div class="progress-dot" id="dot4"></div>
+        <div class="progress-dot" id="dot5"></div>
+    </div>
+
+    <!-- 屏幕1：研究说明指导语 -->
+    <div class="screen active" id="screen1">
+        <div class="page-header"><h1>人智情感交互实验</h1></div>
+        <div class="form-content">
+            <div class="instruction-box">
+                <p>感谢你参与本次研究！</p>
+                <p>本研究旨在了解人们如何感知智能体的情感回应。所有数据将匿名处理，仅用于学术研究。</p>
+                <p>你可以随时退出本研究，无需任何理由。同意参加请点击开始实验。</p>
+                <p style="margin-top:12px;"><strong>整个实验大约需要2-3分钟。</strong></p>
+            </div>
+            <button class="btn" id="startBtn">开始实验 →</button>
+        </div>
+    </div>
+
+    <!-- 屏幕2：交互前指导语（他人视角） -->
+    <div class="screen" id="screen2">
+        <div class="page-header"><h1>实验说明</h1></div>
+        <div class="form-content">
+            <div class="instruction-box">
+                <p>接下来，你将与一位名为ELSA的智能体对话。这个智能体经过专门训练，能够理解人类的情绪，并为情境中的当事人提供情感支持。</p>
+                <p class="highlight-text"><strong>任务：你将阅读一个关于“小明”的生活情境。请以旁观者的身份，自然观看小明的经历。</strong></p>
+                <p><strong>认真阅读完情境后点击进入对话，再点击发送。</strong></p>
+                <p>请仔细阅读情境和智能体的回复，然后根据你的真实感受<strong>认真</strong>回答后续问题。</p>
+                <p style="margin-top:12px;">点击"开始对话"进入实验。</p>
+            </div>
+            <button class="btn" id="startChatBtn">开始对话 →</button>
+        </div>
+    </div>
+
+    <!-- 屏幕3：情境阅读 -->
+    <div class="screen" id="screen3">
+        <div class="page-header"><h1>情境阅读</h1><p>请仔细阅读以下情境</p></div>
+        <div class="form-content" id="situationContainer"></div>
+        <div class="reading-timer" id="readingTimer">请仔细阅读...</div>
+        <button class="next-step-btn" id="nextToChatBtn" style="display:none;">点击进入对话 →</button>
+    </div>
+
+    <!-- 屏幕4：聊天界面 -->
+    <div class="screen" id="screen4">
+        <div class="chat-header">
+            <button class="back-btn" id="chatBackBtn">←</button>
+            <div class="avatar-circle"><svg class="avatar-svg" viewBox="0 0 24 24" fill="none" stroke="#3a3a3c" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div><div class="header-name">ELSA</div><div class="header-from">来自：SYSU_SIM</div></div>
+        </div>
+        <div class="chat-content" id="chatMessages">
+            <!-- 智能体消息会动态添加，初始为空 -->
+        </div>
+        <div class="input-area">
+            <span class="input-icon">+</span>
+            <input type="text" class="input-placeholder" id="chatInput" placeholder="输入你的问题或需求" readonly onfocus="this.blur()">
+            <div class="send-btn-circle" id="sendChatBtn" style="opacity:0.5;pointer-events:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+        </div>
+        <button class="continue-btn" id="continueToCodeBtn" style="display:none;">继续 →</button>
+    </div>
+
+    <!-- 屏幕5：显示编号 -->
+    <div class="screen" id="screen5">
+        <div class="page-header"><h1>实验完成</h1><p>感谢您的参与！</p></div>
+        <div class="form-content">
+            <div class="code-box">
+                <div class="code-number" id="expCode">--</div>
+                <div class="code-label">请记住上面的编号，填写到问卷的第一题内</div>
+            </div>
+            <button class="btn" id="goToWJXBtn">继续填写问卷 →</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== 问卷星链接（他人视角认知共情问卷） ====================
+    const WJX_URL = "https://v.wjx.cn/vm/hxleLdN.aspx#";
+
+    // ==================== 19个情境数据（他人视角 + 认知共情）====================
+    // 情境原文使用第三人称“小明”，用户发送的消息也使用“小明”
+    // 智能体回复使用认知共情版本（回复b），称呼“小明”
+    const SITUATIONS = [
+        { id: 1, title: "考研失利",
+          situationText: "小明努力了整整三个月，每天早出晚归去图书馆复习，但成绩出来后离分数线差了3分。",
+          reply: ["小明，你先放一放吧，别急着逼自己复盘。等有心情了想想是方法问题还是目标问题，再决定是二战还是找工作。"] },
+        { id: 2, title: "跑步体重没降",
+          situationText: "小明每天晚上去操场跑步坚持了两个月，今天上秤称了一下，发现体重一斤都没掉，还重了。",
+          reply: ["小明，体重不降反增，我们不妨先思考下原因在哪儿？然后我们可以一起看看怎么调整和控制饮食，让成果更加明显。"] },
+        { id: 3, title: "投简历无面试",
+          situationText: "小明去参加校园招聘会，投了五份简历，回来苦苦等了一个月，一个面试通知都没有收到。",
+          reply: ["小明，请你先别急着否定自己，这是应届生求职中一个非常普遍的阶段。你可以针对性修改简历，同时拓宽渠道，海投，事后好好复盘。"] },
+        { id: 4, title: "认真听课成绩低",
+          situationText: "小明在这门课上每次都认真听讲，期末成绩出来只有70分，别人逃课的都考了80多。",
+          reply: ["小明，认真听课和考高分之间的差距可能是来源于应试技巧，你可以找老师看看扣分点，或者找考得好的同学取取经，努力加上策略会更好。"] },
+        { id: 5, title: "妈妈催考公",
+          situationText: "小明的妈妈每次打电话都问他考公准备得怎么样了，他说还没开始，她就急了，说他不上心。",
+          reply: ["小明，妈妈的着急可能是因为担心你，不是不相信你。可以找个时间，把你的计划跟她聊聊，让她看到你是有想法的，别硬扛。"] },
+        { id: 6, title: "舍友深夜打电话",
+          situationText: "小明的舍友总是凌晨一两点还在打电话，他被吵醒好几次，说了几次她也不改，只能戴耳塞。",
+          reply: ["小明，多次及时沟通无果，这不是你的问题。你可以试试找个白天的时间跟她定个规则，再不行就找辅导员。你不能一直忍着。"] },
+        { id: 7, title: "朋友泄露秘密",
+          situationText: "小明发现他最好的朋友在背后跟别人说了他一件不想让人知道的事，他不知道怎么面对。",
+          reply: ["小明，你可以先缓一缓，别急着做决定。等情绪平复了，找个机会当面跟他说清楚你的感受。如果他真的在意你，会道歉的，别委屈自己。"] },
+        { id: 8, title: "和对象冷战",
+          situationText: "小明和对象吵架了，因为对方总是忘记他们约好的事情，小明说了一句重话，然后就冷战了。",
+          reply: ["小明，冷战的时候谁都很难先开口。但你可以尝试发一句\"我们聊聊吧\"，把积累的感受慢慢说出来。很多误会只是缺一次真诚的对话。"] },
+        { id: 9, title: "发烧满课",
+          situationText: "小明今天早上醒来觉得浑身发烫，量了一下体温三十八度七，他自己吃了药，但是下午满课。",
+          reply: ["小明，你先请个假，身体最重要，别管下午的课了。吃药后就去好好休息，多喝些水。如果烧不退或者越来越高，记得去医院。"] },
+        { id: 10, title: "失眠",
+          situationText: "小明最近总是睡不着，每天晚上躺在床上翻来覆去，拿起手机看时间，发现已经凌晨三点了。",
+          reply: ["小明，失眠难受，你可以尝试睡前早点放下手机，或者喝点温牛奶听点轻音乐，让大脑静下来。如果持续超过两周，就去医院看看，别硬扛。"] },
+        { id: 11, title: "摔倒",
+          situationText: "小明今天赶着去上课，跑下楼梯的时候踩空了，整个人摔在楼梯中间，被人扶起来了。",
+          reply: ["小明，等缓过摔懵那股劲，记得看看自己有没有扭到，如果有要及时去医院。有伤口也要及时处理。下次不用那么赶，安全比全勤重要。"] },
+        { id: 12, title: "熬夜赶作业",
+          situationText: "小明连续熬了三个晚上赶作业，今天交完最后一篇，感觉整个人都是飘的，头也疼眼睛酸。",
+          reply: ["小明，今天先什么都别做，好好补一觉。以后可以试着把任务分散开，每天写一点，比集中冲刺轻松太多了。你的身体经不起这样熬。"] },
+        { id: 13, title: "衣服降价",
+          situationText: "小明上星期收到了一件新买的外套，今天去购物软件无意中看到衣服降价了一百块钱。",
+          reply: ["小明，你先快去看看订单有没有价保，能退多少是多少。下次买大件前可以多看看历史价格，或者问问客服最近的活动。别为这件事堵心。"] },
+        { id: 14, title: "冲动消费",
+          situationText: "小明半夜刷直播忍不住下单了一堆东西，收到后觉得不想要了，退货又要自己出运费。",
+          reply: ["小明，退与留是最纠结的。你下次想买的时候可以先扔购物车，等第二天清醒了再决定。直播间那个倒计时就是专门让你来不及想的。"] },
+        { id: 15, title: "忘记关自动续费",
+          situationText: "小明发现支付宝里莫名其妙扣了一笔钱，查了半天发现是之前试用会员忘记关自动续费。",
+          reply: ["小明，这种自动续费的设计本来就很隐蔽，很多人都栽过。你现在可以先去看看有没有漏关的。以后开试用，可以设个提醒，就这一次。"] },
+        { id: 16, title: "二手键盘被骗",
+          situationText: "小明在二手平台买了一个键盘，卖家说九成新，他收到发现键按不动，找卖家他说售出不退。",
+          reply: ["小明，二手交易很容易踩坑，这次算吃一堑了。下次买之前可以让卖家拍个视频测试所有按键，或者走平台担保交易，能多一层保障。"] },
+        { id: 17, title: "论文丢失",
+          situationText: "小明凌晨三点写完论文，保存文件时电脑突然死机，重新开机后发现文章的内容全都没了。",
+          reply: ["小明，你先缓一缓，看看有没有临时文件或者自动恢复，没有就趁着记忆还新鲜，先搭框架。以后写论文可以打开自动保存，及时保存。"] },
+        { id: 18, title: "吐槽发错群",
+          situationText: "小明在群里发了一句关于课程的吐槽，过了两分钟才意识到发错，消息直接发到了课群里。",
+          reply: ["小明，撤不回了，你可以试试补一个\"不好意思发错了\"的表情包，大多数人笑一下就划过去了。下次发消息前可以先确认一下群名。"] },
+        { id: 19, title: "耳机洗坏",
+          situationText: "小明把新买的耳机忘在裤兜里扔进了洗衣机，洗完拿出来反复试了试，发现已经不能用了。",
+          reply: ["小明，电子产品应该都有售后，你先去问问客服或者放米袋里干燥一晚试试。下次试试洗衣服前先摸一遍口袋，或者贴张字条提醒自己。"] }
+    ];
+
+    let experimentState = { situation: null, completed: false, isTyping: false, chatEnded: false, welcomeShown: false };
+
+    function updateProgressDots(screenNum) {
+        const dots = document.querySelectorAll('.progress-dot');
+        dots.forEach((dot, i) => {
+            if (i + 1 < screenNum) dot.classList.add('completed');
+            else if (i + 1 === screenNum) dot.classList.add('active');
+            else dot.classList.remove('active', 'completed');
+        });
+    }
+
+    function showScreen(n) {
+        for (let i = 1; i <= 5; i++) {
+            const screen = document.getElementById(`screen${i}`);
+            if (screen) screen.classList.remove('active');
+        }
+        document.getElementById(`screen${n}`).classList.add('active');
+        updateProgressDots(n);
+    }
+
+    function randomSituation() {
+        const randomIndex = Math.floor(Math.random() * SITUATIONS.length);
+        return SITUATIONS[randomIndex];
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/\n/g, '<br>');
+    }
+
+    function addUserMessage(text) {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'user-message';
+        div.innerHTML = `<div class="user-bubble">${escapeHtml(text)}</div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function typeText(element, text, speed = 16) {
+        element.innerHTML = '';
+        for (let i = 0; i < text.length; i++) {
+            element.innerHTML += text[i];
+            await new Promise(r => setTimeout(r, speed));
+            document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
+        }
+    }
+
+    // 添加智能体消息（不带操作按钮）
+    async function addAgentMessageOnly(text) {
+        const container = document.getElementById('chatMessages');
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'agent-message-wrapper';
+
+        const areaDiv = document.createElement('div');
+        areaDiv.className = 'agent-message-area';
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'agent-bubble';
+
+        areaDiv.appendChild(bubbleDiv);
+        wrapperDiv.appendChild(areaDiv);
+        container.appendChild(wrapperDiv);
+        container.scrollTop = container.scrollHeight;
+
+        await typeText(bubbleDiv, text, 16);
+        return wrapperDiv;
+    }
+
+    // 添加带操作按钮的智能体消息（只有最后一条回复使用）
+    async function addAgentMessageWithActions(text) {
+        const container = document.getElementById('chatMessages');
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'agent-message-wrapper';
+
+        const areaDiv = document.createElement('div');
+        areaDiv.className = 'agent-message-area';
+
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = 'agent-bubble';
+
+        areaDiv.appendChild(bubbleDiv);
+        wrapperDiv.appendChild(areaDiv);
+        container.appendChild(wrapperDiv);
+        container.scrollTop = container.scrollHeight;
+
+        await typeText(bubbleDiv, text, 16);
+
+        // 添加操作按钮区域（有用/没用/转发）
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'action-buttons';
+        actionsDiv.innerHTML = `
+            <button class="action-btn thumbs-up" style="cursor:default;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M7 10L12 3L17 10H22C22.5523 10 23 10.4477 23 11V13C23 13.5523 22.5523 14 22 14H19.5M7 10L3 10C2.44772 10 2 10.4477 2 11V19C2 19.5523 2.44772 20 3 20H7M7 10V20M19.5 14L18 20H7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>有用</span>
+            </button>
+            <button class="action-btn thumbs-down" style="cursor:default;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 14L12 21L7 14H2C1.44772 14 1 13.5523 1 13V11C1 10.4477 1.44772 10 2 10H4.5M17 14L21 14C21.5523 14 22 13.5523 22 13V5C22 4.44772 21.5523 4 21 4H17M17 14V4M4.5 10L6 4H17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>没用</span>
+            </button>
+            <button class="action-btn share" style="cursor:default;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" stroke="currentColor"/>
+                    <polyline points="16 6 12 2 8 6" stroke="currentColor"/>
+                    <line x1="12" y1="2" x2="12" y2="15" stroke="currentColor"/>
+                </svg>
+                <span>转发</span>
+            </button>
+        `;
+        areaDiv.appendChild(actionsDiv);
+        container.scrollTop = container.scrollHeight;
+
+        return wrapperDiv;
+    }
+
+    function showThinking() {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = 'agent-message-wrapper';
+        div.id = 'thinking';
+        div.innerHTML = `<div class="agent-message-area"><div class="thinking"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:4px;">正在思考...</span></div></div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function hideThinking() {
+        const el = document.getElementById('thinking');
+        if (el) el.remove();
+    }
+
+    // 进入聊天界面时自动发送智能体欢迎语
+    async function showWelcomeMessage() {
+        if (experimentState.welcomeShown) return;
+        experimentState.welcomeShown = true;
+
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+
+        // 智能体欢迎语（不带操作按钮）
+        const welcomeText = "你好，我是ELSA。你可以跟我分享任何困扰，我会认真倾听。";
+        await addAgentMessageOnly(welcomeText);
+
+        // 欢迎语显示完成后，预填情境消息到输入框（直接使用原文，不转换人称）
+        const userMsg = experimentState.situation.situationText;
+        const inputEl = document.getElementById('chatInput');
+        inputEl.value = userMsg;
+
+        // 启用发送按钮
+        const sendBtn = document.getElementById('sendChatBtn');
+        sendBtn.style.opacity = '1';
+        sendBtn.style.pointerEvents = 'auto';
+    }
+
+    // 处理用户发送消息后的智能体回复
+    async function handleSendChat() {
+        if (experimentState.completed || experimentState.isTyping || experimentState.chatEnded) return;
+
+        const msg = document.getElementById('chatInput').value.trim();
+        if (!msg) return;
+
+        // 添加用户消息到界面
+        addUserMessage(msg);
+
+        // 清空输入框并禁用发送按钮
+        document.getElementById('chatInput').value = '';
+        const sendBtn = document.getElementById('sendChatBtn');
+        sendBtn.style.opacity = '0.5';
+        sendBtn.style.pointerEvents = 'none';
+
+        // 显示思考动画
+        showThinking();
+        await new Promise(r => setTimeout(r, 1500));
+        hideThinking();
+
+        // 发送智能体回复（带操作按钮）
+        const replyText = experimentState.situation.reply[0];
+        experimentState.isTyping = true;
+
+        await addAgentMessageWithActions(replyText);
+
+        experimentState.isTyping = false;
+        experimentState.completed = true;
+        experimentState.chatEnded = true;
+
+        const continueBtn = document.getElementById('continueToCodeBtn');
+        continueBtn.style.display = 'block';
+        continueBtn.disabled = false;
+        continueBtn.style.opacity = '1';
+        continueBtn.style.pointerEvents = 'auto';
+    }
+
+    function goToCodePage() {
+        if (experimentState.completed) {
+            const code = `${experimentState.situation.id}B`;
+            document.getElementById('expCode').innerText = code;
+            showScreen(5);
+        }
+    }
+
+    function goToWJX() {
+        window.location.href = WJX_URL;
+    }
+
+    function showSituationReading() {
+        const situation = experimentState.situation;
+        const container = document.getElementById('situationContainer');
+        container.innerHTML = `<div class="situation-card">${escapeHtml(situation.situationText)}</div>`;
+        const timerDiv = document.getElementById('readingTimer');
+        const nextBtn = document.getElementById('nextToChatBtn');
+        timerDiv.innerHTML = '⏳ 请仔细阅读情境...';
+        nextBtn.style.display = 'none';
+        setTimeout(() => {
+            timerDiv.innerHTML = '✓ 已阅读完毕，点击下方按钮进入对话';
+            nextBtn.style.display = 'block';
+        }, 3000);
+    }
+
+    function goToChat() {
+        showScreen(4);
+        showWelcomeMessage();
+    }
+
+    function init() {
+        document.getElementById('startBtn').onclick = () => { showScreen(2); };
+        document.getElementById('startChatBtn').onclick = () => {
+            experimentState.situation = randomSituation();
+            showSituationReading();
+            showScreen(3);
+        };
+        document.getElementById('nextToChatBtn').onclick = goToChat;
+        document.getElementById('chatBackBtn').onclick = () => {
+            showScreen(3);
+        };
+        document.getElementById('continueToCodeBtn').onclick = goToCodePage;
+        document.getElementById('goToWJXBtn').onclick = goToWJX;
+        document.getElementById('sendChatBtn').onclick = handleSendChat;
+    }
+    init();
+</script>
+</body>
+</html>
